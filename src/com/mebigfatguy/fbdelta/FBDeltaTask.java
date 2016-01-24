@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,6 +23,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -115,9 +116,9 @@ public class FBDeltaTask extends Task {
         XPathExpression bugInstanceXPE = xp.compile("/BugCollection/BugInstance");
         XPathExpression classNameXPE = xp.compile("./Class/@classname");
         XPathExpression bugXPE = xp.compile("./Method|./Field");
-        XPathExpression sourceLineXPE = xp.compile("./SourceLine");
+        XPathExpression sourceLineXPE = xp.compile("./Class/SourceLine");
 
-        Map<String, Map<String, Set<String>>> report = new HashMap<>();
+        Map<String, Map<String, Set<String>>> report = new TreeMap<>();
 
         NodeList bugsNodes = (NodeList) bugInstanceXPE.evaluate(d, XPathConstants.NODESET);
         for (int i = 0; i < bugsNodes.getLength(); i++) {
@@ -140,7 +141,7 @@ public class FBDeltaTask extends Task {
 
             Map<String, Set<String>> classBugs = report.get(className);
             if (classBugs == null) {
-                classBugs = new HashMap<>();
+                classBugs = new TreeMap<>();
                 report.put(className, classBugs);
             }
 
@@ -202,5 +203,22 @@ public class FBDeltaTask extends Task {
                 updateData.remove(clsName);
             }
         }
+    }
+
+    /**
+     * for debugging only
+     */
+    public static void main(String[] args) {
+        FBDeltaTask t = new FBDeltaTask();
+        Project p = new Project();
+        t.setProject(p);
+
+        t.setBaseReport(new File("/home/dave/dev/fb-contrib/samples.xml"));
+        t.setUpdateReport(new File("/home/dave/dev/fb-contrib/target/samples.xml"));
+        t.setChanged("changed");
+        t.setOutputReport(new File("/home/dave/dev/fb-contrib/target/samples-diff.txt"));
+
+        t.execute();
+
     }
 }
