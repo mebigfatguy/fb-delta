@@ -62,18 +62,13 @@ public class FBDeltaTask extends Task {
                 throw new BuildException("'updateReport' is not specified or is invalid");
             }
 
-            if (outputReport != null) {
-                if (!outputReport.getParentFile().mkdirs()) {
-                    throw new BuildException("Unable to create directory " + outputReport.getParent() + " for output report");
-                }
-            }
-
             Map<String, Map<String, Set<String>>> baseData = parseReport(baseReport);
             Map<String, Map<String, Set<String>>> updateData = parseReport(updateReport);
 
             removeDuplicates(baseData, updateData);
 
             if (outputReport != null) {
+                outputReport.getParentFile().mkdirs();
                 try (PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputReport), StandardCharsets.UTF_8)))) {
                     pw.println("Changes found in Base Report but not in Update Report (FIXED)");
                     pw.println();
