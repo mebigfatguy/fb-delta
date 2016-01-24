@@ -118,6 +118,8 @@
 				<include name="**/*.java" />
 				<include name="**/*.license" />
                 <include name="**/*.md" />
+                <include name="**/*.xml" />
+                <include name="**/*.properties" />
 			</fileset>
 		</zip>
 	</target>
