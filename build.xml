@@ -113,7 +113,7 @@
 	</target>
 
 	<target name="srczip" description="builds the source distribution zip file">
-		<zip destfile="${target.dir}/fb-delta-sources-${fb-delta.version}.jar">
+		<zip destfile="${target.dir}/fb-delta-${fb-delta.version}-sources.jar">
 			<fileset dir="${basedir}">
 				<include name="**/*.java" />
 				<include name="**/*.license" />
@@ -136,7 +136,7 @@
     <target name="sonatype" depends="release" description="prepare an artifact bundle for sonatype">
         <mkdir dir="${sonatype.dir}"/>
         <copy todir="${sonatype.dir}" file="${target.dir}/fb-delta-${fb-delta.version}.jar"/>
-        <copy todir="${sonatype.dir}" file="${target.dir}/fb-delta-sources-${fb-delta.version}.jar"/>
+        <copy todir="${sonatype.dir}" file="${target.dir}/fb-delta-${fb-delta.version}-sources.jar"/>
         <jar destfile="${sonatype.dir}/fb-delta-${fb-delta.version}-javadoc.jar" basedir="${target.dir}" includes="javadoc/**"/>
         <copy tofile="${sonatype.dir}/fb-delta-${fb-delta.version}.pom" file="${basedir}/pom.xml"/>
         
