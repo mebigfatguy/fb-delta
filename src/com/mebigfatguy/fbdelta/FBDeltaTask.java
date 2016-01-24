@@ -71,31 +71,31 @@ public class FBDeltaTask extends Task {
             if (outputReport != null) {
                 outputReport.getParentFile().mkdirs();
                 try (PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputReport), StandardCharsets.UTF_8)))) {
-                    pw.println("Changes found in Base Report but not in Update Report (FIXED)");
-                    pw.println();
+                    pw.println("<fbdelta>");
+                    pw.println("\t<fixed>");
                     for (Map.Entry<String, Map<String, Set<String>>> clsEntry : baseData.entrySet()) {
-                        pw.println("Class: " + clsEntry.getKey());
+                        pw.println("\t\t<class name='" + clsEntry.getKey() + "'>");
                         for (Map.Entry<String, Set<String>> typeEntry : clsEntry.getValue().entrySet()) {
-                            pw.println("\tType: " + typeEntry.getKey() + "\tCount: " + typeEntry.getValue().size());
+                            pw.println("\t\t\t<bug type='" + typeEntry.getKey() + "' count='" + typeEntry.getValue().size() + "'/>");
                         }
-                        pw.println();
+                        pw.println("\t\t</class>");
                     }
-
-                    pw.println();
-                    pw.println("Changes found in Update Report but not in Base Report (NEW)");
-                    pw.println();
+                    pw.println("\t</fixed>");
+                    pw.println("\t<new>");
                     for (Map.Entry<String, Map<String, Set<String>>> clsEntry : updateData.entrySet()) {
-                        pw.println("Class: " + clsEntry.getKey());
+                        pw.println("\t\t<class name='" + clsEntry.getKey() + "'>");
                         for (Map.Entry<String, Set<String>> typeEntry : clsEntry.getValue().entrySet()) {
-                            pw.println("\tType: " + typeEntry.getKey() + "\tCount: " + typeEntry.getValue().size());
+                            pw.println("\t\t\t<bug type='" + typeEntry.getKey() + "' count='" + typeEntry.getValue().size() + "'/>");
                         }
-                        pw.println();
+                        pw.println("\t\t</class>");
                     }
+                    pw.println("\t</new>");
+                    pw.println("</fbdelta>");
                 }
             }
 
-            if (changedPropertyName != null) {
-                getProject().setProperty(changedPropertyName, String.valueOf(!baseData.isEmpty() || !updateData.isEmpty()));
+            if ((changedPropertyName != null) && (!baseData.isEmpty() || !updateData.isEmpty())) {
+                getProject().setProperty(changedPropertyName, String.valueOf(Boolean.TRUE));
             }
 
         } catch (Exception e) {
@@ -194,6 +194,13 @@ public class FBDeltaTask extends Task {
                         updateBugs.remove(bug);
                     }
                 }
+
+                if (baseBugs.isEmpty()) {
+                    baseTypeMap.remove(baseType);
+                }
+                if (updateBugs.isEmpty()) {
+                    updateTypeMap.remove(baseType);
+                }
             }
 
             if (baseTypeMap.isEmpty()) {
@@ -216,7 +223,7 @@ public class FBDeltaTask extends Task {
         t.setBaseReport(new File("/home/dave/dev/fb-contrib/samples.xml"));
         t.setUpdateReport(new File("/home/dave/dev/fb-contrib/target/samples.xml"));
         t.setChanged("changed");
-        t.setOutputReport(new File("/home/dave/dev/fb-contrib/target/samples-diff.txt"));
+        t.setOutputReport(new File("/home/dave/dev/fb-contrib/target/samples-delta.xml"));
 
         t.execute();
 
