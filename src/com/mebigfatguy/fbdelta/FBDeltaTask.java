@@ -63,14 +63,18 @@ public class FBDeltaTask extends Task {
                 throw new BuildException("'updateReport' is not specified or is invalid");
             }
 
+            getProject().log("[fb-delta] Parsing base report " + baseReport, Project.MSG_VERBOSE);
             Map<String, Map<String, Set<String>>> baseData = parseReport(baseReport);
+            getProject().log("[fb-delta] Parsing update report " + updateReport, Project.MSG_VERBOSE);
             Map<String, Map<String, Set<String>>> updateData = parseReport(updateReport);
 
+            getProject().log("[fb-delta] Removing duplicate bugs from base and update reports", Project.MSG_VERBOSE);
             removeDuplicates(baseData, updateData);
 
             if (outputReport != null) {
                 outputReport.getParentFile().mkdirs();
                 try (PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputReport), StandardCharsets.UTF_8)))) {
+                    getProject().log("[fb-delta] Printing report to " + outputReport, Project.MSG_VERBOSE);
                     pw.println("<fbdelta>");
                     pw.println("\t<fixed>");
                     for (Map.Entry<String, Map<String, Set<String>>> clsEntry : baseData.entrySet()) {
@@ -95,6 +99,7 @@ public class FBDeltaTask extends Task {
             }
 
             if ((changedPropertyName != null) && (!baseData.isEmpty() || !updateData.isEmpty())) {
+                getProject().log("[fb-delta] Setting changed property '" + changedPropertyName + "' to TRUE", Project.MSG_VERBOSE);
                 getProject().setProperty(changedPropertyName, String.valueOf(Boolean.TRUE));
             }
 
