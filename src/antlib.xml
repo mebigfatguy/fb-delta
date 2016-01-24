@@ -1,0 +1,3 @@
+<antlib xmlns:vcsversion="ant:com.mebigfatguy.fbdelta">
+   <taskdef name="fbdelta" classname="com.mebigfatguy.fbdelta.FBDeltaTask"/>
+</antlib>

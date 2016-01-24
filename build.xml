@@ -79,6 +79,7 @@
 		<javac srcdir="${src.dir}" destdir="${classes.dir}" source="${javac.source}" target="${javac.target}" deprecation="${javac.deprecation}" debug="${javac.debug}" includeantruntime="false">
 			<classpath refid="fb-delta.classpath" />
 		</javac>
+		<copy todir="${classes.dir}" file="${src.dir}/antlib.xml"/>
 	</target>
 
 	<target name="jar" depends="compile" xmlns:vcs="antlib:com.mebigfatguy.vcsversion" description="produces the fb-delta jar file">
@@ -86,6 +87,7 @@
 		<jar destfile="${target.dir}/fb-delta-${fb-delta.version}.jar">
 			<fileset dir="${classes.dir}">
 				<include name="**/*.class" />
+				<include name="**/*.xml" />
 			</fileset>
 			<fileset dir="${basedir}">
 				<include name="license.txt" />
