@@ -233,21 +233,4 @@ public class FBDeltaTask extends Task {
             }
         }
     }
-
-    /**
-     * for debugging only
-     */
-    public static void main(String[] args) {
-        FBDeltaTask t = new FBDeltaTask();
-        Project p = new Project();
-        t.setProject(p);
-
-        t.setBaseReport(new File("/home/dave/dev/fb-contrib/samples.xml"));
-        t.setUpdateReport(new File("/home/dave/dev/fb-contrib/target/samples.xml"));
-        t.setChanged("changed");
-        t.setOutputReport(new File("/home/dave/dev/fb-contrib/target/samples-delta.xml"));
-
-        t.execute();
-
-    }
 }
