@@ -88,32 +88,7 @@ public class FBDeltaTask extends Task {
             getProject().log("[fb-delta] Removing duplicate bugs from base and update reports", Project.MSG_VERBOSE);
             removeDuplicates(baseData, updateData);
 
-            if (outputReport != null) {
-                outputReport.getParentFile().mkdirs();
-                try (PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputReport), StandardCharsets.UTF_8)))) {
-                    getProject().log("[fb-delta] Printing report to " + outputReport, Project.MSG_VERBOSE);
-                    pw.println("<fbdelta>");
-                    pw.println("\t<fixed>");
-                    for (Map.Entry<String, Map<String, Set<String>>> clsEntry : baseData.entrySet()) {
-                        pw.println("\t\t<class name='" + clsEntry.getKey() + "'>");
-                        for (Map.Entry<String, Set<String>> typeEntry : clsEntry.getValue().entrySet()) {
-                            pw.println("\t\t\t<bug type='" + typeEntry.getKey() + "' count='" + typeEntry.getValue().size() + "'/>");
-                        }
-                        pw.println("\t\t</class>");
-                    }
-                    pw.println("\t</fixed>");
-                    pw.println("\t<new>");
-                    for (Map.Entry<String, Map<String, Set<String>>> clsEntry : updateData.entrySet()) {
-                        pw.println("\t\t<class name='" + clsEntry.getKey() + "'>");
-                        for (Map.Entry<String, Set<String>> typeEntry : clsEntry.getValue().entrySet()) {
-                            pw.println("\t\t\t<bug type='" + typeEntry.getKey() + "' count='" + typeEntry.getValue().size() + "'/>");
-                        }
-                        pw.println("\t\t</class>");
-                    }
-                    pw.println("\t</new>");
-                    pw.println("</fbdelta>");
-                }
-            }
+            report(baseData, updateData);
 
             if ((changedPropertyName != null) && (!baseData.isEmpty() || !updateData.isEmpty())) {
                 getProject().log("[fb-delta] Setting changed property '" + changedPropertyName + "' to TRUE", Project.MSG_VERBOSE);
@@ -208,7 +183,7 @@ public class FBDeltaTask extends Task {
                     continue;
                 }
 
-                Iterator<String> bugIt = updateBugs.iterator();
+                Iterator<String> bugIt = baseBugs.iterator();
                 while (bugIt.hasNext()) {
                     String bug = bugIt.next();
                     if (updateBugs.contains(bug)) {
@@ -230,6 +205,35 @@ public class FBDeltaTask extends Task {
             }
             if (updateTypeMap.isEmpty()) {
                 updateData.remove(clsName);
+            }
+        }
+    }
+
+    private void report(Map<String, Map<String, Set<String>>> baseData, Map<String, Map<String, Set<String>>> updateData) throws IOException {
+        if (outputReport != null) {
+            outputReport.getParentFile().mkdirs();
+            try (PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputReport), StandardCharsets.UTF_8)))) {
+                getProject().log("[fb-delta] Printing report to " + outputReport, Project.MSG_VERBOSE);
+                pw.println("<fbdelta>");
+                pw.println("\t<fixed>");
+                for (Map.Entry<String, Map<String, Set<String>>> clsEntry : baseData.entrySet()) {
+                    pw.println("\t\t<class name='" + clsEntry.getKey() + "'>");
+                    for (Map.Entry<String, Set<String>> typeEntry : clsEntry.getValue().entrySet()) {
+                        pw.println("\t\t\t<bug type='" + typeEntry.getKey() + "' count='" + typeEntry.getValue().size() + "'/>");
+                    }
+                    pw.println("\t\t</class>");
+                }
+                pw.println("\t</fixed>");
+                pw.println("\t<new>");
+                for (Map.Entry<String, Map<String, Set<String>>> clsEntry : updateData.entrySet()) {
+                    pw.println("\t\t<class name='" + clsEntry.getKey() + "'>");
+                    for (Map.Entry<String, Set<String>> typeEntry : clsEntry.getValue().entrySet()) {
+                        pw.println("\t\t\t<bug type='" + typeEntry.getKey() + "' count='" + typeEntry.getValue().size() + "'/>");
+                    }
+                    pw.println("\t\t</class>");
+                }
+                pw.println("\t</new>");
+                pw.println("</fbdelta>");
             }
         }
     }
