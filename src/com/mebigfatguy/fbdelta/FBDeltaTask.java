@@ -193,7 +193,7 @@ public class FBDeltaTask extends Task {
                 }
 
                 if (baseBugs.isEmpty()) {
-                    baseTypeMap.remove(baseType);
+                    typeIt.remove();
                 }
                 if (updateBugs.isEmpty()) {
                     updateTypeMap.remove(baseType);
