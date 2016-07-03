@@ -29,6 +29,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -80,10 +84,28 @@ public class FBDeltaTask extends Task {
                 throw new BuildException("'updateReport' is not specified or is invalid");
             }
 
-            getProject().log("[fb-delta] Parsing base report " + baseReport, Project.MSG_VERBOSE);
-            Map<String, Map<String, Set<String>>> baseData = parseReport(baseReport);
-            getProject().log("[fb-delta] Parsing update report " + updateReport, Project.MSG_VERBOSE);
-            Map<String, Map<String, Set<String>>> updateData = parseReport(updateReport);
+            ExecutorService es = Executors.newFixedThreadPool(2);
+
+            Future<Map<String, Map<String, Set<String>>>> baseFuture = es.submit(new Callable<Map<String, Map<String, Set<String>>>>() {
+                @Override
+                public Map<String, Map<String, Set<String>>> call() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
+                    getProject().log("[fb-delta] Parsing base report " + baseReport, Project.MSG_VERBOSE);
+                    return parseReport(baseReport);
+                }
+            });
+
+            Future<Map<String, Map<String, Set<String>>>> updateFuture = es.submit(new Callable<Map<String, Map<String, Set<String>>>>() {
+                @Override
+                public Map<String, Map<String, Set<String>>> call() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
+                    getProject().log("[fb-delta] Parsing update report " + updateReport, Project.MSG_VERBOSE);
+                    return parseReport(updateReport);
+                }
+            });
+
+            es.shutdown();
+
+            Map<String, Map<String, Set<String>>> baseData = baseFuture.get();
+            Map<String, Map<String, Set<String>>> updateData = updateFuture.get();
 
             getProject().log("[fb-delta] Removing duplicate bugs from base and update reports", Project.MSG_VERBOSE);
             removeDuplicates(baseData, updateData);
