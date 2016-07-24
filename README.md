@@ -13,3 +13,9 @@ Add an ant task like the following
 		<loadfile property="diff" srcFile="output.xml"/> 
 		<echo>${diff}</echo> 
 	</target>
+	
+fb-delta is available on [maven.org](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.mebigfatguy.fb-contrib%22%20AND%20a%3A%22fb-contrib%22)
+
+       GroupId: com.mebigfatguy.fb-delta
+    ArtifactId: fb-delta
+       Version: 0.4.1
