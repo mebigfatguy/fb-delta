@@ -14,7 +14,7 @@ Add an ant task like the following
 		<echo>${diff}</echo> 
 	</target>
 	
-fb-delta is available on [maven.org](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.mebigfatguy.fb-contrib%22%20AND%20a%3A%22fb-contrib%22)
+fb-delta is available on [maven.org](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.mebigfatguy.fb-delta%22%20AND%20a%3A%22fb-delta%22)
 
        GroupId: com.mebigfatguy.fb-delta
     ArtifactId: fb-delta
