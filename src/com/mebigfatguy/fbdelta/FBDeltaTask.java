@@ -78,10 +78,10 @@ public class FBDeltaTask extends Task {
     public void execute() {
         try {
             if ((baseReport == null) || (!baseReport.isFile())) {
-                throw new BuildException("'baseReport' is not specified or is invalid");
+                throw new BuildException("'baseReport' is not specified or is invalid (" + baseReport + ")");
             }
             if ((updateReport == null) || (!updateReport.isFile())) {
-                throw new BuildException("'updateReport' is not specified or is invalid");
+                throw new BuildException("'updateReport' is not specified or is invalid (" + updateReport + ")");
             }
 
             ExecutorService es = Executors.newFixedThreadPool(2);
