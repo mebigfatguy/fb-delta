@@ -53,10 +53,29 @@ import org.xml.sax.SAXException;
 
 public class FBDeltaTask extends Task {
 
+    private static final XPathExpression bugInstanceXPE;
+    private static final XPathExpression classNameXPE;
+    private static final XPathExpression bugXPE;
+    private static final XPathExpression sourceLineXPE;
+
     private File baseReport;
     private File updateReport;
     private File outputReport;
     private String changedPropertyName;
+
+    static {
+        try {
+            XPathFactory xpf = XPathFactory.newInstance();
+            XPath xp = xpf.newXPath();
+
+            bugInstanceXPE = xp.compile("/BugCollection/BugInstance");
+            classNameXPE = xp.compile("./Class/@classname");
+            bugXPE = xp.compile("./Method|./Field");
+            sourceLineXPE = xp.compile("./Class/SourceLine");
+        } catch (XPathExpressionException e) {
+            throw new BuildException("Failed to create required xpath", e);
+        }
+    }
 
     public void setBaseReport(File base) {
         baseReport = base;
@@ -128,14 +147,6 @@ public class FBDeltaTask extends Task {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document d = db.parse(reportFile);
-
-        XPathFactory xpf = XPathFactory.newInstance();
-        XPath xp = xpf.newXPath();
-
-        XPathExpression bugInstanceXPE = xp.compile("/BugCollection/BugInstance");
-        XPathExpression classNameXPE = xp.compile("./Class/@classname");
-        XPathExpression bugXPE = xp.compile("./Method|./Field");
-        XPathExpression sourceLineXPE = xp.compile("./Class/SourceLine");
 
         Map<String, Map<String, Set<String>>> report = new TreeMap<>();
 
