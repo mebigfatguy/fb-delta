@@ -17,65 +17,41 @@
  */
 package com.mebigfatguy.fbdelta;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 public class FBDeltaTask extends Task {
-
-    private static final XPathExpression bugInstanceXPE;
-    private static final XPathExpression classNameXPE;
-    private static final XPathExpression bugXPE;
-    private static final XPathExpression sourceLineXPE;
 
     private File baseReport;
     private File updateReport;
     private File outputReport;
     private String changedPropertyName;
-
-    static {
-        try {
-            XPathFactory xpf = XPathFactory.newInstance();
-            XPath xp = xpf.newXPath();
-
-            bugInstanceXPE = xp.compile("/BugCollection/BugInstance");
-            classNameXPE = xp.compile("./Class/@classname");
-            bugXPE = xp.compile("./Method|./Field");
-            sourceLineXPE = xp.compile("./Class/SourceLine");
-        } catch (XPathExpressionException e) {
-            throw new BuildException("Failed to create required xpath", e);
-        }
-    }
 
     public void setBaseReport(File base) {
         baseReport = base;
@@ -109,7 +85,7 @@ public class FBDeltaTask extends Task {
                 @Override
                 public Map<String, Map<String, Set<String>>> call() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
                     getProject().log("[fb-delta] Parsing base report " + baseReport, Project.MSG_VERBOSE);
-                    return parseReport(baseReport);
+                    return redInputStr(baseReport);
                 }
             });
 
@@ -117,7 +93,7 @@ public class FBDeltaTask extends Task {
                 @Override
                 public Map<String, Map<String, Set<String>>> call() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
                     getProject().log("[fb-delta] Parsing update report " + updateReport, Project.MSG_VERBOSE);
-                    return parseReport(updateReport);
+                    return redInputStr(updateReport);
                 }
             });
 
@@ -141,50 +117,17 @@ public class FBDeltaTask extends Task {
         }
     }
 
-    private Map<String, Map<String, Set<String>>> parseReport(File reportFile)
-            throws IOException, SAXException, ParserConfigurationException, XPathExpressionException {
+    private Map<String, Map<String, Set<String>>> redInputStr(File reportFile) throws IOException, SAXException {
 
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document d = db.parse(reportFile);
+        XMLReader r = XMLReaderFactory.createXMLReader();
+        ReportContentHandler handler = new ReportContentHandler();
+        r.setContentHandler(handler);
 
-        Map<String, Map<String, Set<String>>> report = new TreeMap<>();
+        try (InputStream is = new BufferedInputStream(new FileInputStream(reportFile))) {
+            r.parse(new InputSource(is));
 
-        NodeList bugsNodes = (NodeList) bugInstanceXPE.evaluate(d, XPathConstants.NODESET);
-        for (int i = 0; i < bugsNodes.getLength(); i++) {
-            Element bugElement = (Element) bugsNodes.item(i);
-            String type = bugElement.getAttribute("type");
-            String className = (String) classNameXPE.evaluate(bugElement, XPathConstants.STRING);
-
-            Element bugDetailElement = (Element) bugXPE.evaluate(bugElement, XPathConstants.NODE);
-            String bugData = null;
-            if (bugDetailElement != null) {
-                bugData = bugDetailElement.getAttribute("name") + bugDetailElement.getAttribute("signature");
-            } else {
-                Element sourceLineElement = (Element) sourceLineXPE.evaluate(bugElement, XPathConstants.NODE);
-                if (sourceLineElement != null) {
-                    bugData = sourceLineElement.getAttribute("start") + "-" + sourceLineElement.getAttribute("end");
-                } else {
-                    bugData = "UNKNOWN " + Math.random();
-                }
-            }
-
-            Map<String, Set<String>> classBugs = report.get(className);
-            if (classBugs == null) {
-                classBugs = new TreeMap<>();
-                report.put(className, classBugs);
-            }
-
-            Set<String> bugs = classBugs.get(type);
-            if (bugs == null) {
-                bugs = new HashSet<>();
-                classBugs.put(type, bugs);
-            }
-
-            bugs.add(bugData);
+            return handler.getReport();
         }
-
-        return report;
     }
 
     private void removeDuplicates(Map<String, Map<String, Set<String>>> baseData, Map<String, Map<String, Set<String>>> updateData) {
