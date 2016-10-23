@@ -18,4 +18,4 @@ fb-delta is available on [maven.org](http://search.maven.org/#search%7Cga%7C1%7C
 
        GroupId: com.mebigfatguy.fb-delta
     ArtifactId: fb-delta
-       Version: 0.4.1
+       Version: 0.6.0
