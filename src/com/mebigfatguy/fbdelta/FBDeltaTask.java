@@ -18,15 +18,12 @@
 package com.mebigfatguy.fbdelta;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -123,7 +120,7 @@ public class FBDeltaTask extends Task {
         ReportContentHandler handler = new ReportContentHandler();
         r.setContentHandler(handler);
 
-        try (InputStream is = new BufferedInputStream(new FileInputStream(reportFile))) {
+        try (InputStream is = new BufferedInputStream(Files.newInputStream(reportFile.toPath()))) {
             r.parse(new InputSource(is));
 
             return handler.getReport();
@@ -188,7 +185,7 @@ public class FBDeltaTask extends Task {
     private void report(Map<String, Map<String, Set<String>>> baseData, Map<String, Map<String, Set<String>>> updateData) throws IOException {
         if (outputReport != null) {
             outputReport.getParentFile().mkdirs();
-            try (PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputReport), StandardCharsets.UTF_8)))) {
+            try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(outputReport.toPath(), StandardCharsets.UTF_8))) {
                 getProject().log("[fb-delta] Printing report to " + outputReport, Project.MSG_VERBOSE);
                 pw.println("<fbdelta>");
                 pw.println("\t<fixed>");
