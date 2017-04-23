@@ -82,7 +82,7 @@ public class FBDeltaTask extends Task {
                 @Override
                 public Map<String, Map<String, Set<String>>> call() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
                     getProject().log("[fb-delta] Parsing base report " + baseReport, Project.MSG_VERBOSE);
-                    return redInputStr(baseReport);
+                    return parseReport(baseReport);
                 }
             });
 
@@ -90,7 +90,7 @@ public class FBDeltaTask extends Task {
                 @Override
                 public Map<String, Map<String, Set<String>>> call() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
                     getProject().log("[fb-delta] Parsing update report " + updateReport, Project.MSG_VERBOSE);
-                    return redInputStr(updateReport);
+                    return parseReport(updateReport);
                 }
             });
 
@@ -114,7 +114,7 @@ public class FBDeltaTask extends Task {
         }
     }
 
-    private Map<String, Map<String, Set<String>>> redInputStr(File reportFile) throws IOException, SAXException {
+    private Map<String, Map<String, Set<String>>> parseReport(File reportFile) throws IOException, SAXException {
 
         XMLReader r = XMLReaderFactory.createXMLReader();
         ReportContentHandler handler = new ReportContentHandler();
