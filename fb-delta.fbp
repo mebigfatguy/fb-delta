@@ -1,5 +1,5 @@
 <Project projectName="fb-delta">
   <Jar>./target/classes</Jar>
-  <AuxClasspathEntry>./lib/ant-1.9.7.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./lib/ant-1.10.2.jar</AuxClasspathEntry>
   <SrcDir>./src</SrcDir>
 </Project>
